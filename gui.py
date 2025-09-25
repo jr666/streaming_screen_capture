@@ -149,7 +149,6 @@ class ScreenMonitorApp(tk.Tk):
         diff = ImageChops.difference(img1, img2)
         h = diff.convert('1').histogram()
         #sq = (value*(idx**2) for idx, value in enumerate(h))
-        print(f"Sum of h: {sum(h)}")
         sq = h[:-1]
         sum_of_squares = sum(sq)
         rms = (sum_of_squares/float(diff.width * diff.height))
@@ -187,8 +186,6 @@ class ScreenMonitorApp(tk.Tk):
                     # Convert diff to grayscale and get the brightest pixel value
                     #max_diff = diff.convert('L').getextrema()[1]
                     max_diff = self.calc_pct_diff(last_capture, current_capture)
-                    print(f"Max Diff: {max_diff}")
-
                     if max_diff > threshold:
                         last_capture = current_capture
                         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")

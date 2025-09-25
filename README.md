@@ -2,9 +2,9 @@
 
 This utility allows you to pick a screen area, and to continuously capture screen-shots from it, saving images only when they change (threshold selected by slider).
 
-## To setup
+## To setup and run
 ```
-uv init .
+uv sync
 
 uv run gui.py
 ```
