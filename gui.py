@@ -1,6 +1,8 @@
 import os
 import time
 import threading
+import ctypes
+
 from datetime import datetime
 # FIX: Import the 'Image' module from PIL
 from PIL import Image, ImageGrab, ImageChops, ImageTk
@@ -23,6 +25,7 @@ class ScreenMonitorApp(tk.Tk):
         self.monitor_thread = None
         self.image_references = []
         self.sensitivity_var = tk.IntVar(value=DEFAULT_THRES)
+        self.scaling_factor = self.get_display_scaling_factor()
 
         # --- UI Setup ---
         self.create_widgets()
@@ -115,7 +118,13 @@ class ScreenMonitorApp(tk.Tk):
         self.deiconify() # Show main window again
 
         if selector.bbox:
-            self.bbox = selector.bbox
+            self.bbox = (
+                int(selector.bbox[0] * self.scaling_factor),
+                int(selector.bbox[1] * self.scaling_factor),
+                int(selector.bbox[2] * self.scaling_factor),
+                int(selector.bbox[3] * self.scaling_factor)
+            )
+            
             self.status_label.config(text=f"Area Selected: {self.bbox}. Ready to monitor.")
             self.start_button.config(state=tk.NORMAL)
         else:
@@ -248,6 +257,26 @@ class ScreenMonitorApp(tk.Tk):
             if self.monitor_thread and self.monitor_thread.is_alive():
                 self.monitor_thread.join(timeout=1) # Wait for thread to finish
         self.destroy()
+    
+    def get_display_scaling_factor(self):
+        """
+        Retrieves the display scaling factor for the primary display.
+        """
+        try:
+            # Load the shcore.dll library
+            shcore = ctypes.windll.shcore
+            # Call GetScaleFactorForDevice with DEVICE_TYPE_DISPLAYDEVICE (0)
+            # The result is returned as a percentage (e.g., 125 for 125% scaling)
+            scale_factor_percentage = shcore.GetScaleFactorForDevice(0)
+            # Convert to a float (e.g., 1.25 for 125% scaling)
+            return scale_factor_percentage / 100.0
+        except AttributeError:
+            print("Error: shcore.dll or GetScaleFactorForDevice not found.")
+            print("This function might only be available on Windows 8.1 and later.")
+            return None
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return None
 
 class AreaSelector(tk.Toplevel):
     """A transparent window for selecting a screen area by dragging a rectangle."""
